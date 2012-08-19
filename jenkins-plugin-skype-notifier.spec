@@ -7,11 +7,12 @@
 Summary:	Jenkins Skype notifier plugin
 Name:		jenkins-plugin-%{plugin}
 Version:	1.1.0
-Release:	0.1
+Release:	0.2
 License:	MIT License
 Group:		Networking/Daemons/Java/Servlets
 Source0:	https://github.com/jenkinsci/skype-im-plugin/tarball/skype-notifier-%{version}/%{name}-%{version}.tgz
 # Source0-md5:	61aa40c39b2d915c4acb889359f6b412
+Patch0:		pom.patch
 URL:		https://wiki.jenkins-ci.org/display/JENKINS/Skype+Plugin
 BuildRequires:	jpackage-utils
 BuildRequires:	maven >= 2
@@ -32,8 +33,8 @@ Integrates Jenkins with Skype for instant messaging.
 %prep
 %setup -qc
 mv jenkinsci-skype-im-plugin-*/* .
-
-%undos README
+%undos README *.xml
+%patch0 -p1
 
 %build
 export JAVA_HOME="%{java_home}"

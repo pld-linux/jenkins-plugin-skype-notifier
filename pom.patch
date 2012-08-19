@@ -1,0 +1,21 @@
+--- jenkins-plugin-skype-notifier-1.1.0/pom.xml	2011-05-14 21:20:56.000000000 +0300
++++ jenkins-plugin-skype-notifier-1.1.1/pom.xml	2012-04-06 19:15:45.000000000 +0300
+@@ -84,14 +84,14 @@
+   -->
+     <repositories>
+         <repository>
+-            <id>m.g.o-public</id>
+-            <url>http://maven.glassfish.org/content/groups/public/</url>
++            <id>repo.jenkins-ci.org</id>
++            <url>http://repo.jenkins-ci.org/public/</url>
+         </repository>
+     </repositories>
+     <pluginRepositories>
+         <pluginRepository>
+-            <id>m.g.o-public</id>
+-            <url>http://maven.glassfish.org/content/groups/public/</url>
++            <id>repo.jenkins-ci.org</id>
++            <url>http://repo.jenkins-ci.org/public/</url>
+         </pluginRepository>
+     </pluginRepositories>
+ 
