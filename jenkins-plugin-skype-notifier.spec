@@ -20,7 +20,8 @@ BuildRequires:	maven >= 2
 BuildRequires:	rpm-javaprov
 BuildRequires:	rpmbuild(macros) >= 1.553
 Requires:	java-skype
-Requires:	jenkins
+Requires:	jenkins >= 1.404
+#Requires:	jenkins-plugin-instant-messaging >= 1.16
 Requires:	jpackage-utils
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
