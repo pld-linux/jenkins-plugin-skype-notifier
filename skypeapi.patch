@@ -1,0 +1,248 @@
+--- skype-im-plugin/pom.xml	2012-08-20 02:16:20.248561158 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/pom.xml	2012-08-20 02:03:55.880644537 +0300
+@@ -58,6 +58,12 @@
+         </dependency>
+       
+         <dependency>
++			<groupId>com.github.taksan</groupId>
++			<artifactId>skype-java-api</artifactId>
++			<version>1.4</version>
++		</dependency>
++      
++        <dependency>
+             <groupId>junit</groupId>
+             <artifactId>junit</artifactId>
+             <version>3.8.2</version>
+--- skype-im-plugin/src/main/java/hudson/plugins/skype/im/transport/SkypeChat.java	2012-08-20 02:13:49.704900241 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/main/java/hudson/plugins/skype/im/transport/SkypeChat.java	2012-08-20 02:12:53.872306264 +0300
+@@ -2,7 +2,7 @@
+ 
+ import com.skype.Chat;
+ import com.skype.Chat.Status;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import com.skype.SkypeException;
+ import hudson.plugins.im.IMChat;
+ import hudson.plugins.im.IMException;
+@@ -40,7 +40,7 @@
+     public void addMessageListener(IMMessageListener listener) {
+         //this.messageListener = new SkypeMessageListenerAdapter(listener);
+         //try {
+-        //    SkypeImpl.addChatMessageListener(messageListener);
++        //    Skype.addChatMessageListener(messageListener);
+         //} catch (SkypeException ex) {
+         //    Logger.getLogger(SkypeChat.class.getName()).log(Level.SEVERE, null, ex);
+        // }
+@@ -49,7 +49,7 @@
+     public void removeMessageListener(IMMessageListener listener) {
+         // doesn't work out-of the box with Smack
+ 
+-        //SkypeImpl.removeChatMessageListener(messageListener);
++        //Skype.removeChatMessageListener(messageListener);
+ 
+     }
+ 
+--- skype-im-plugin/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeChatCallable.java	2012-08-20 02:13:49.708233729 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeChatCallable.java	2012-08-20 02:12:53.872306264 +0300
+@@ -8,7 +8,7 @@
+ import com.skype.Chat;
+ import com.skype.ChatMessage;
+ import com.skype.SkypeException;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import hudson.plugins.skype.im.transport.SkypeIMException;
+ import hudson.remoting.Callable;
+ import java.util.logging.Level;
+@@ -29,7 +29,7 @@
+     }
+     public ChatMessage call() throws SkypeIMException {
+         try {
+-            Chat chat = SkypeImpl.chat(skypeNames);
++            Chat chat = Skype.chat(skypeNames);
+             return chat.send(message);
+         } catch (SkypeException ex) {
+             throw new SkypeIMException(ex);
+--- skype-im-plugin/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeGroupChatCallable.java	2012-08-20 02:13:49.711567218 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeGroupChatCallable.java	2012-08-20 02:12:31.781279915 +0300
+@@ -8,7 +8,7 @@
+ import com.skype.Chat;
+ import com.skype.ChatMessage;
+ import com.skype.SkypeException;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import com.skype.Group;
+ import hudson.plugins.skype.im.transport.SkypeIMException;
+ 
+@@ -27,8 +27,8 @@
+     @Override
+     public ChatMessage call() throws SkypeIMException {
+         try {
+-            Group group = SkypeImpl.getContactList().getGroup(chatName);            
+-            Chat[] chats = SkypeImpl.getAllChats();
++            Group group = Skype.getContactList().getGroup(chatName);            
++            Chat[] chats = Skype.getAllChats();
+             Chat useChat = null;
+             for (Chat chat : chats) {
+                 if (chat.getWindowTitle().contains(chatName)) {
+@@ -37,7 +37,7 @@
+                 }
+             }
+             if (useChat == null && group != null) {
+-                useChat = SkypeImpl.chat("");
++                useChat = Skype.chat("");
+                 useChat.setTopic(chatName);
+                 useChat.addUsers(group.getAllFriends());              
+             } else if (useChat == null) {              
+--- skype-im-plugin/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeMoodCallable.java	2012-08-20 02:13:49.711567218 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeMoodCallable.java	2012-08-20 02:10:13.354848633 +0300
+@@ -6,7 +6,7 @@
+ 
+ import com.skype.Profile;
+ import com.skype.SkypeException;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import hudson.plugins.skype.im.transport.SkypeIMException;
+ import hudson.remoting.Callable;
+ import java.util.logging.Level;
+@@ -29,10 +29,10 @@
+     public Object call() throws SkypeIMException {
+         try {
+             if (status != null) {
+-                SkypeImpl.getProfile().setStatus(status);
++                Skype.getProfile().setStatus(status);
+             }
+             if (mood != null) {
+-                SkypeImpl.getProfile().setMoodMessage(mood);
++                Skype.getProfile().setMoodMessage(mood);
+             }
+         } catch (SkypeException ex) {
+             throw new SkypeIMException(ex);
+--- skype-im-plugin/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeSetupCallable.java	2012-08-20 02:13:49.711567218 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeSetupCallable.java	2012-08-20 02:11:51.162726114 +0300
+@@ -8,7 +8,7 @@
+ import com.skype.ChatMessage;
+ import com.skype.ChatMessageListener;
+ import com.skype.SkypeException;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import hudson.plugins.im.bot.Bot;
+ import hudson.plugins.skype.im.transport.SkypeChat;
+ import hudson.plugins.skype.im.transport.SkypeIMException;
+@@ -41,15 +41,15 @@
+             if (!supportedArchs.contains(System.getProperty("os.arch"))) {
+                 throw new RuntimeException("Cannot use skype server on a 64 bit jvm (" + System.getProperty("os.arch") + ")");
+             }
+-            if (!SkypeImpl.isInstalled()) {
++            if (!Skype.isInstalled()) {
+                 throw new RuntimeException("Skype not installed.");
+             }
+-            if (!SkypeImpl.isRunning()) {
++            if (!Skype.isRunning()) {
+                 //throw new RuntimeException("Skype is not running.");
+                 System.err.println("Skype is probably not running");
+             }
+-            SkypeImpl.setDebug(true);
+-            SkypeImpl.setDaemon(true);
++            Skype.setDebug(true);
++            Skype.setDaemon(true);
+             addSkypeListener(Channel.current());
+             return true;
+         } catch (SkypeException ex) {
+@@ -59,12 +59,12 @@
+ 
+     private void addSkypeListener(Channel channel) throws SkypeException {
+         final IMListener listener = new SkypeSetupCallable.IMListener(channel);
+-        SkypeImpl.addChatMessageListener(listener);
++        Skype.addChatMessageListener(listener);
+         if (channel != null) {
+             channel.addListener(new Channel.Listener() {
+                 @Override
+                 public void onClosed(Channel channel, IOException cause) {
+-                    SkypeImpl.removeChatMessageListener(listener);
++                    Skype.removeChatMessageListener(listener);
+                     System.err.println("Removed skype listener");
+                 }
+             });
+--- skype-im-plugin/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeVerifyUserCallable.java	2012-08-20 02:16:20.251894646 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/main/java/hudson/plugins/skype/im/transport/callables/SkypeVerifyUserCallable.java	2012-08-20 02:09:31.936257660 +0300
+@@ -5,7 +5,7 @@
+ package hudson.plugins.skype.im.transport.callables;
+ 
+ import com.skype.SkypeException;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import com.skype.User;
+ import com.skype.User.BuddyStatus;
+ import hudson.plugins.skype.im.transport.SkypeIMException;
+@@ -30,12 +30,12 @@
+     public String call() throws SkypeIMException {
+         String result = null;
+ 
+-        User usr = SkypeImpl.getUser(skypeNames);
++        User usr = Skype.getUser(skypeNames);
+ 
+         try {
+             if (usr == null || usr.getFullName() == null || usr.getFullName().trim().length() <= 0) {
+                 usr = null;
+-                User[] users = SkypeImpl.searchUsers(skypeNames);
++                User[] users = Skype.searchUsers(skypeNames);
+ 
+                 for (User user : users) {
+                     if (user.getId().equals(skypeNames)) {
+@@ -56,7 +56,7 @@
+                 System.out.println("BDY (" + usr.getDisplayName() + "):'" + bdyStatus + "' :'" + BuddyStatus.ADDED + "'");
+                 if (!usr.getBuddyStatus().equals(BuddyStatus.ADDED)) {
+                     try {
+-                        SkypeImpl.getContactList().addFriend(usr, "The Skype Service on " + InetAddress.getLocalHost().getHostName() + " wants to notify you");
++                        Skype.getContactList().addFriend(usr, "The Skype Service on " + InetAddress.getLocalHost().getHostName() + " wants to notify you");
+                     } catch (UnknownHostException ex) {
+                         Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+                         throw new SkypeIMException(ex);
+--- skype-im-plugin/src/test/java/hudson/plugins/skype/im/transport/SkypeIMConnectionTest.java	2012-08-20 02:13:49.741568612 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/test/java/hudson/plugins/skype/im/transport/SkypeIMConnectionTest.java	2012-08-20 02:12:53.872306264 +0300
+@@ -6,7 +6,7 @@
+ package hudson.plugins.skype.im.transport;
+ 
+ import com.skype.Chat;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import hudson.model.Hudson;
+ import hudson.model.Node;
+ import hudson.model.Node.Mode;
+--- skype-im-plugin/src/test/java/hudson/plugins/skype/im/transport/testskype.java	2012-08-20 02:13:49.741568612 +0300
++++ jenkins-plugin-skype-notifier-1.1.0/src/test/java/hudson/plugins/skype/im/transport/testskype.java	2012-08-20 02:12:53.872306264 +0300
+@@ -6,7 +6,7 @@
+ 
+ import com.skype.Chat;
+ import com.skype.Group;
+-import com.skype.SkypeImpl;
++import com.skype.Skype;
+ import junit.framework.Test;
+ import junit.framework.TestCase;
+ 
+@@ -18,20 +18,20 @@
+      
+      public void testSkype() throws Exception {
+          
+-         SkypeImpl.setDebug(true);
+-          Group group = SkypeImpl.getContactList().getGroup("devs");
+-          for (Group tg : SkypeImpl.getContactList().getAllSystemGroups()) {
++         Skype.setDebug(true);
++          Group group = Skype.getContactList().getGroup("devs");
++          for (Group tg : Skype.getContactList().getAllSystemGroups()) {
+               System.out.println("group:"+tg.getType()+":"+tg.getDisplayName());
+           }
+           Chat useChat = null;
+-        for (Chat chat : SkypeImpl.getAllChats()) {
++        for (Chat chat : Skype.getAllChats()) {
+             System.out.println(chat.getWindowTitle()+" "+chat.getStatus());
+             if (chat.getWindowTitle().equals("devs")) {
+                 useChat = chat;
+             }
+         }
+         if (useChat == null) {
+-            useChat = SkypeImpl.chat("");
++            useChat = Skype.chat("");
+             useChat.setTopic("devs");
+             useChat.addUsers(group.getAllFriends());
+         }
