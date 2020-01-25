@@ -3,7 +3,6 @@
 %bcond_with	tests		# don't build and run tests
 
 %define		plugin	skype-notifier
-%include	/usr/lib/rpm/macros.java
 Summary:	Jenkins Skype notifier plugin
 Name:		jenkins-plugin-%{plugin}
 Version:	1.1.0
