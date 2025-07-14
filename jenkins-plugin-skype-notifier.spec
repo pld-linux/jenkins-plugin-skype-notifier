@@ -35,8 +35,8 @@ Integrates Jenkins with Skype for instant messaging.
 %setup -qc
 mv jenkinsci-skype-im-plugin-*/* .
 %undos README -f xml,java
-%patch0 -p1
-%patch1 -p1
+%patch -P0 -p1
+%patch -P1 -p1
 
 # remove bundled skype api
 %{__rm} -r src/main/java/com/skype
